@@ -142,7 +142,7 @@ export const DEFAULT_CONFIG = {
     cta1Link: 'whatsapp',
     cta2Text: 'Ver resultados',
     cta2Link: '#resultados',
-    image: '',
+    image: '/assets/img/sabrina-hero.jpg',
     imageShape: 'blob',
     proofText: 'Mais de **120 marcas** já passaram pelo laboratório',
     proofAvatars: 'AM, JS, LC, RP',
@@ -201,7 +201,7 @@ export const DEFAULT_CONFIG = {
     kicker: 'Quem está por trás do laboratório',
     title: 'Prazer, eu sou a *Sabrina*.',
     text: 'Estrategista de marketing digital e fundadora da Petricelli Digital. Há anos transformo dados em decisões — e decisões em vendas.\n\nMinha abordagem é simples: cada campanha é um experimento. Formulamos hipóteses, testamos rápido, medimos tudo e escalamos apenas o que comprovadamente funciona. Sem fórmulas mágicas: só método, criatividade e muita análise.',
-    image: '',
+    image: '/assets/img/sabrina-sobre.jpg',
     badgeValue: '8+',
     badgeLabel: 'anos de experiência',
     highlights: [

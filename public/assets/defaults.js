@@ -61,22 +61,22 @@ export const SECTION_IDS = {
 };
 
 export const SECTION_LABELS = {
-  hero: 'Hero (topo)', logos: 'Carrossel de logos', stats: 'Números', about: 'Sobre a Rebecca',
+  hero: 'Hero (topo)', logos: 'Carrossel de logos', stats: 'Números', about: 'Sobre a Sabrina',
   services: 'Serviços', method: 'Método', results: 'Resultados', testimonials: 'Depoimentos',
   pricing: 'Planos', faq: 'Perguntas frequentes', finalCta: 'CTA final',
 };
 
 export const DEFAULT_CONFIG = {
   meta: {
-    title: 'Rebecca Lab · Laboratório de Marketing',
-    description: 'Estratégia, tráfego pago e conteúdo tratados como ciência. Conheça o laboratório de marketing da Rebecca e cresça com método.',
+    title: 'Petricelli Digital · Comunicação & Audiovisual',
+    description: 'Estratégia, tráfego pago e conteúdo tratados como ciência. Conheça o laboratório de marketing da Sabrina e cresça com método.',
     favicon: '',
     ogImage: '',
   },
   brand: {
-    name: 'Rebecca Lab',
-    tagline: 'Laboratório de Marketing',
-    person: 'Rebecca',
+    name: 'Petricelli Digital',
+    tagline: 'Comunicação & Audiovisual',
+    person: 'Sabrina',
     logoType: 'text',
     logoIcon: 'flask',
     logoImage: '',
@@ -137,7 +137,7 @@ export const DEFAULT_CONFIG = {
     enabled: true,
     badge: 'Laboratório de Marketing Digital',
     title: 'Seu marketing tratado como *ciência*. Seus resultados, como *rotina*.',
-    subtitle: 'Eu sou a Rebecca. Testo, meço e escalo estratégias de tráfego, conteúdo e conversão para marcas que querem crescer com previsibilidade — sem achismo.',
+    subtitle: 'Eu sou a Sabrina. Testo, meço e escalo estratégias de tráfego, conteúdo e conversão para marcas que querem crescer com previsibilidade — sem achismo.',
     cta1Text: 'Quero crescer com método',
     cta1Link: 'whatsapp',
     cta2Text: 'Ver resultados',
@@ -199,8 +199,8 @@ export const DEFAULT_CONFIG = {
   about: {
     enabled: true,
     kicker: 'Quem está por trás do laboratório',
-    title: 'Prazer, eu sou a *Rebecca*.',
-    text: 'Estrategista de marketing digital e fundadora do Rebecca Lab. Há anos transformo dados em decisões — e decisões em vendas.\n\nMinha abordagem é simples: cada campanha é um experimento. Formulamos hipóteses, testamos rápido, medimos tudo e escalamos apenas o que comprovadamente funciona. Sem fórmulas mágicas: só método, criatividade e muita análise.',
+    title: 'Prazer, eu sou a *Sabrina*.',
+    text: 'Estrategista de marketing digital e fundadora da Petricelli Digital. Há anos transformo dados em decisões — e decisões em vendas.\n\nMinha abordagem é simples: cada campanha é um experimento. Formulamos hipóteses, testamos rápido, medimos tudo e escalamos apenas o que comprovadamente funciona. Sem fórmulas mágicas: só método, criatividade e muita análise.',
     image: '',
     badgeValue: '8+',
     badgeLabel: 'anos de experiência',
@@ -209,8 +209,8 @@ export const DEFAULT_CONFIG = {
       { icon: 'flask', text: 'Metodologia própria de testes e validação' },
       { icon: 'heart', text: 'Atendimento próximo e personalizado' },
     ],
-    signature: 'Rebecca',
-    ctaText: 'Conversar com a Rebecca',
+    signature: 'Sabrina',
+    ctaText: 'Conversar com a Sabrina',
     ctaLink: 'whatsapp',
   },
   services: {
@@ -262,7 +262,7 @@ export const DEFAULT_CONFIG = {
     interval: 6,
     items: [
       { avatar: '', name: 'Nome da Cliente', role: 'Empresa · Segmento', rating: 5, text: 'Pela primeira vez entendi para onde ia cada real investido. Os relatórios são claros e os resultados vieram já no segundo mês.' },
-      { avatar: '', name: 'Nome do Cliente', role: 'Empresa · Segmento', rating: 5, text: 'A Rebecca trata cada campanha como um experimento. Testa, mede e ajusta. Nosso custo por lead caiu pela metade.' },
+      { avatar: '', name: 'Nome do Cliente', role: 'Empresa · Segmento', rating: 5, text: 'A Sabrina trata cada campanha como um experimento. Testa, mede e ajusta. Nosso custo por lead caiu pela metade.' },
       { avatar: '', name: 'Nome da Cliente', role: 'Empresa · Segmento', rating: 5, text: 'Atendimento impecável e muito próximo. Ela realmente entende o negócio antes de propor qualquer coisa.' },
       { avatar: '', name: 'Nome do Cliente', role: 'Empresa · Segmento', rating: 5, text: 'Nosso lançamento foi o maior da história da empresa. Método, organização e criatividade do início ao fim.' },
     ],
@@ -275,7 +275,7 @@ export const DEFAULT_CONFIG = {
     items: [
       { name: 'Start', price: 'R$ 1.497', period: '/mês', description: 'Para quem está começando a investir em tráfego pago.', features: 'Gestão de 1 plataforma de anúncios\nAté 8 criativos por mês\nRelatório mensal de resultados\nSuporte via WhatsApp', ctaText: 'Começar agora', ctaLink: 'whatsapp', featured: false, badge: '' },
       { name: 'Growth', price: 'R$ 2.997', period: '/mês', description: 'Para marcas prontas para escalar com consistência.', features: 'Gestão de até 3 plataformas\nAté 20 criativos por mês\nSocial media (12 posts/mês)\nDashboard em tempo real\nReunião estratégica quinzenal', ctaText: 'Quero escalar', ctaLink: 'whatsapp', featured: true, badge: 'Mais escolhido' },
-      { name: 'Lab Premium', price: 'Sob consulta', period: '', description: 'Estratégia 360º com acompanhamento direto da Rebecca.', features: 'Estratégia completa de marketing\nCriativos ilimitados\nLançamentos e funis de vendas\nConsultoria semanal\nPrioridade no atendimento', ctaText: 'Falar com a Rebecca', ctaLink: 'whatsapp', featured: false, badge: '' },
+      { name: 'Lab Premium', price: 'Sob consulta', period: '', description: 'Estratégia 360º com acompanhamento direto da Sabrina.', features: 'Estratégia completa de marketing\nCriativos ilimitados\nLançamentos e funis de vendas\nConsultoria semanal\nPrioridade no atendimento', ctaText: 'Falar com a Sabrina', ctaLink: 'whatsapp', featured: false, badge: '' },
     ],
   },
   faq: {
@@ -302,13 +302,13 @@ export const DEFAULT_CONFIG = {
   },
   footer: {
     text: 'Estratégia, dados e criatividade para marcas que querem crescer com método.',
-    email: 'contato@rebeccalab.com.br',
+    email: 'contato@petricellidigital.com.br',
     phone: '',
-    instagram: 'https://instagram.com/',
+    instagram: 'https://www.instagram.com/petricelli.digital/',
     tiktok: '',
     linkedin: '',
     youtube: '',
-    copyright: '© 2026 Rebecca Lab. Todos os direitos reservados.',
+    copyright: '© 2026 Petricelli Digital. Todos os direitos reservados.',
     links: [
       { label: 'Serviços', href: '#servicos' },
       { label: 'Planos', href: '#planos' },
@@ -318,7 +318,7 @@ export const DEFAULT_CONFIG = {
   whatsapp: {
     enabled: true,
     number: '5511999999999',
-    message: 'Olá, Rebecca! Vim pelo site e quero saber mais sobre o laboratório.',
+    message: 'Olá, Sabrina! Vim pelo site e quero saber mais sobre o laboratório.',
     label: 'Fale comigo',
     position: 'right',
     color: '#25D366',

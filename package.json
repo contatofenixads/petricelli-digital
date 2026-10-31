@@ -1,8 +1,8 @@
 {
-  "name": "rebecca-lab",
+  "name": "petricelli-digital",
   "version": "1.0.0",
   "private": true,
-  "description": "Página de vendas do Rebecca Lab com painel administrativo.",
+  "description": "Página de vendas da Petricelli Digital com painel administrativo.",
   "type": "module",
   "scripts": {
     "dev": "node dev-server.mjs"

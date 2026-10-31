@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "rebecca-lab",
+      "name": "petricelli-digital",
       "runtimeExecutable": "node",
       "runtimeArgs": ["dev-server.mjs"],
       "port": 3000

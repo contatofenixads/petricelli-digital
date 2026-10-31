@@ -63,4 +63,4 @@ http.createServer(async (req, res) => {
   } catch {
     res.writeHead(404); res.end('Não encontrado');
   }
-}).listen(PORT, () => console.log(`Rebecca Lab rodando em http://localhost:${PORT}  (painel: /admin)`));
+}).listen(PORT, () => console.log(`Petricelli Digital rodando em http://localhost:${PORT}  (painel: /admin)`));

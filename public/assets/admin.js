@@ -154,7 +154,7 @@ const TABS = [
       T('hero.cta1Text', 'Botão principal — texto'), L('hero.cta1Link', 'Botão principal — link'),
       T('hero.cta2Text', 'Botão secundário — texto'), L('hero.cta2Link', 'Botão secundário — link'),
       HD('Foto'),
-      IMG('hero.image', 'Foto da Rebecca', { hint: 'Ideal: foto vertical ou quadrada, fundo limpo.' }),
+      IMG('hero.image', 'Foto da Sabrina', { hint: 'Ideal: foto vertical ou quadrada, fundo limpo.' }),
       S('hero.imageShape', 'Formato da foto', [['blob', 'Orgânico animado'], ['circle', 'Círculo'], ['rounded', 'Arredondado'], ['arch', 'Arco']]),
       HD('Prova social'),
       T('hero.proofText', 'Texto de prova social', { hint: RICH }),
@@ -194,7 +194,7 @@ const TABS = [
     ],
   },
   {
-    id: 'about', label: 'Sobre a Rebecca', icon: 'heart', section: 'sobre', desc: 'Apresentação da profissional.',
+    id: 'about', label: 'Sobre a Sabrina', icon: 'heart', section: 'sobre', desc: 'Apresentação da profissional.',
     fields: [
       EN('about.enabled'),
       T('about.kicker', 'Etiqueta'), T('about.title', 'Título', { hint: RICH }),
@@ -550,7 +550,7 @@ function backupControl() {
       h('span', {}, state.storage ? 'Armazenamento conectado: as alterações publicadas ficam salvas na nuvem.' : 'Armazenamento não conectado. Conecte um Vercel Blob ao projeto para publicar alterações.')),
     h('button', { type: 'button', class: 'abtn', onclick: () => {
       const blob = new Blob([JSON.stringify(state.cfg, null, 2)], { type: 'application/json' });
-      const a = h('a', { href: URL.createObjectURL(blob), download: `rebecca-lab-config-${new Date().toISOString().slice(0, 10)}.json` });
+      const a = h('a', { href: URL.createObjectURL(blob), download: `petricelli-digital-config-${new Date().toISOString().slice(0, 10)}.json` });
       a.click(); URL.revokeObjectURL(a.href);
     } }, ic('download'), 'Exportar configuração (.json)'),
     h('button', { type: 'button', class: 'abtn', onclick: () => imp.click() }, ic('upload'), 'Importar configuração'),
@@ -664,7 +664,7 @@ function renderApp() {
   const datalist = h('datalist', { id: 'link-suggestions' }, ['whatsapp', ...Object.values(SECTION_IDS).map((s) => '#' + s)].map((v) => h('option', { value: v })));
   root.replaceChildren(
     h('aside', { class: 'side' },
-      h('a', { class: 'brand', href: '/', target: '_blank' }, h('span', { class: 'brand-mark', html: icon('flask') }), h('span', {}, h('strong', {}, 'Rebecca Lab'), h('small', {}, 'Painel administrativo'))),
+      h('a', { class: 'brand', href: '/', target: '_blank' }, h('span', { class: 'brand-mark', html: icon('flask') }), h('span', {}, h('strong', {}, 'Petricelli Digital'), h('small', {}, 'Painel administrativo'))),
       nav,
       h('div', { class: 'side-foot' }, h('a', { class: 'abtn ghost small', href: '/', target: '_blank' }, ic('external'), 'Ver site'), h('button', { type: 'button', class: 'abtn ghost small', onclick: logout }, ic('logout'), 'Sair'))),
     h('section', { class: 'editor' },

@@ -97,6 +97,13 @@ export const DEFAULT_CONFIG = {
     baseSize: 16,
     headingScale: 1,
   },
+  // Tema Clean (claro e colorido), alternado pelo botão no topo da página.
+  themeClean: {
+    bg: '#FCF7FF', surface: '#FFFFFF', surface2: '#F4EAFB', text: '#1E1529', muted: '#665A75',
+    primary: '#7C3AED', secondary: '#DB2777', accent: '#F59E0B',
+    ctaBg1: '#7C3AED', ctaBg2: '#DB2777', ctaText: '#FFFFFF',
+  },
+  themeSwitch: { enabled: true, default: 'dark', darkLabel: 'Dark', cleanLabel: 'Clean' },
   effects: {
     animations: true,
     reveal: true,

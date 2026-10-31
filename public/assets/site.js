@@ -76,8 +76,43 @@ function loadFonts() {
   }
 }
 
+/* ---------- tema Dark / Clean ---------- */
+const MODE_KEY = 'petricelli-theme';
+let savedMode = null;
+try { savedMode = localStorage.getItem(MODE_KEY); } catch { /* sem armazenamento */ }
+function themeMode() {
+  const s = cfg.themeSwitch || {};
+  if (s.enabled === false) return 'dark';
+  if (savedMode === 'dark' || savedMode === 'clean') return savedMode;
+  return s.default === 'clean' ? 'clean' : 'dark';
+}
+function palette() {
+  return themeMode() === 'clean' ? { ...cfg.theme, ...(cfg.themeClean || {}) } : cfg.theme;
+}
+function setThemeMode(m) {
+  savedMode = m;
+  try { localStorage.setItem(MODE_KEY, m); } catch { /* sem armazenamento */ }
+  applyTheme();
+  document.querySelectorAll('.theme-switch').forEach(syncSwitch);
+  restartParticles();
+}
+function syncSwitch(el) {
+  const m = themeMode();
+  el.dataset.mode = m;
+  el.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === m)));
+}
+function themeSwitchHtml() {
+  const s = cfg.themeSwitch || {};
+  if (s.enabled === false) return '';
+  return `<div class="theme-switch" role="group" aria-label="Tema da página">
+    <span class="ts-thumb" aria-hidden="true"></span>
+    <button type="button" data-mode="dark" aria-pressed="false">${icon('moon')}<span>${esc(s.darkLabel || 'Dark')}</span></button>
+    <button type="button" data-mode="clean" aria-pressed="false">${icon('sun')}<span>${esc(s.cleanLabel || 'Clean')}</span></button>
+  </div>`;
+}
+
 function applyTheme() {
-  const t = cfg.theme, e = cfg.effects;
+  const t = palette(), e = cfg.effects;
   const root = document.documentElement.style;
   const set = (k, v) => root.setProperty(k, v);
   ['bg', 'surface', 'text', 'muted', 'primary', 'secondary', 'accent'].forEach((k) => set('--' + k, t[k]));
@@ -99,6 +134,7 @@ function applyTheme() {
   const light = isLight(t.bg);
   document.body.className = [
     light ? 'theme-light' : 'theme-dark',
+    themeMode() === 'clean' ? 'mode-clean' : 'mode-dark',
     'hl-' + (t.highlightStyle || 'serif'),
     e.animations && !reducedMotion ? '' : 'no-anim',
     e.ctaShine ? 'fx-shine' : '',
@@ -143,7 +179,7 @@ function renderNav() {
   return `<header class="nav${n.sticky ? ' sticky' : ''}"><div class="container nav-in">
     <a href="#inicio" class="logo">${logoHtml()}</a>
     <nav class="nav-links">${links}</nav>
-    <div class="nav-cta">${btn(n.ctaText, n.ctaLink, 'primary', '')}
+    <div class="nav-cta">${themeSwitchHtml()}${btn(n.ctaText, n.ctaLink, 'primary', '')}
       <button class="nav-toggle" aria-label="Abrir menu">${icon('menu')}</button></div></div>
     <div class="mobile-menu"><div class="container">${links}${btn(n.ctaText, n.ctaLink, 'primary')}</div></div>
   </header>`;
@@ -344,6 +380,13 @@ function initNav() {
   addEventListener('scroll', onScroll, { passive: true });
   cleanups.push(() => removeEventListener('scroll', onScroll));
   nav.querySelector('.nav-toggle')?.addEventListener('click', () => nav.classList.toggle('open'));
+  nav.querySelectorAll('.theme-switch').forEach((el) => {
+    syncSwitch(el);
+    el.addEventListener('click', (ev) => {
+      const b = ev.target.closest('button[data-mode]');
+      if (b && b.dataset.mode !== themeMode()) setThemeMode(b.dataset.mode);
+    });
+  });
   nav.querySelectorAll('.mobile-menu a').forEach((a) => a.addEventListener('click', () => nav.classList.remove('open')));
 }
 
@@ -445,12 +488,16 @@ function initCursorGlow() {
   cleanups.push(() => { removeEventListener('pointermove', move); cancelAnimationFrame(raf); });
 }
 
+let stopParticles = null;
+function restartParticles() { stopParticles?.(); stopParticles = null; initParticles(); }
+
 function initParticles() {
   const canvas = document.querySelector('.particles');
   if (!canvas) return;
   if (!cfg.effects.particles || document.body.classList.contains('no-anim')) { canvas.hidden = true; return; }
   const ctx = canvas.getContext('2d');
-  const colors = [cfg.theme.primary, cfg.theme.secondary, cfg.theme.accent];
+  const pal = palette();
+  const colors = [pal.primary, pal.secondary, pal.accent];
   let w, h, dots, raf, visible = true;
   const resize = () => {
     const dpr = Math.min(2, devicePixelRatio || 1);
@@ -482,7 +529,9 @@ function initParticles() {
   const io = new IntersectionObserver(([en]) => (visible = en.isIntersecting));
   io.observe(canvas);
   addEventListener('resize', resize);
-  cleanups.push(() => { cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize', resize); });
+  const stop = () => { cancelAnimationFrame(raf); io.disconnect(); removeEventListener('resize', resize); };
+  stopParticles = stop;
+  cleanups.push(stop);
 }
 
 /* ---------- render ---------- */

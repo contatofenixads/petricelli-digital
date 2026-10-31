@@ -11,14 +11,21 @@ function safeEqual(a, b) {
   return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
 
-export function checkPassword(password) {
+// Senha padrão do painel, guardada só como hash (nunca em texto puro).
+// Se a variável ADMIN_PASSWORD for definida na Vercel, ela substitui esta.
+const DEFAULT_TOKEN = '3dd4b7554ffe1c02fb7dc2648865e22fae9a30cab49cb2ecb5c0713b20db1adf';
+
+export function adminToken() {
   const pw = process.env.ADMIN_PASSWORD;
-  return !!pw && safeEqual(tokenFor(password ?? ''), tokenFor(pw));
+  return pw ? tokenFor(pw) : DEFAULT_TOKEN;
+}
+
+export function checkPassword(password) {
+  return safeEqual(tokenFor(password ?? ''), adminToken());
 }
 
 export function isAuthorized(req) {
-  const pw = process.env.ADMIN_PASSWORD;
-  return !!pw && safeEqual(req.headers['x-admin-token'] || '', tokenFor(pw));
+  return safeEqual(req.headers['x-admin-token'] || '', adminToken());
 }
 
 export const hasBlob = () => !!(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);

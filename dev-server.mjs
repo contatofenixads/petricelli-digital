@@ -1,5 +1,5 @@
 // Servidor local para testar o site e o painel sem a Vercel.
-// Uso: npm run dev   (senha do painel: variável ADMIN_PASSWORD ou "admin")
+// Uso: npm run dev   (senha do painel: variável ADMIN_PASSWORD ou "123456789")
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -8,7 +8,7 @@ import crypto from 'node:crypto';
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = path.resolve('public');
 const DATA = path.resolve('data/config.json');
-const PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const PASSWORD = process.env.ADMIN_PASSWORD || '123456789';
 const TOKEN = crypto.createHash('sha256').update(`rebecca-lab:${PASSWORD}`).digest('hex');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.ico': 'image/x-icon' };
 

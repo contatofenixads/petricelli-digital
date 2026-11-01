@@ -1159,7 +1159,8 @@ function setDomains(main) {
   }) }, ic('search'), 'Conferir DNS');
   drawToken();
 
-  const dnsRows = d.list.flatMap((dom) => [['A', '@', '76.76.21.21', dom], ...['www', 'admin', 'editar', 'orcamento'].map((s) => ['CNAME', s, 'cname.vercel-dns.com', dom])]);
+  // Valores recomendados pela Vercel para este projeto (os antigos 76.76.21.21 e cname.vercel-dns.com também funcionam).
+  const dnsRows = d.list.flatMap((dom) => [['A', '@', '216.150.1.1', dom], ...['www', 'admin', 'editar', 'orcamento'].map((s) => ['CNAME', s, 'b6484aef65556765.vercel-dns-016.com', dom])]);
   main.append(
     h('section', { class: 'card', style: 'margin-bottom:16px' },
       h('div', { class: 'card-head' }, h('div', {}, h('h2', {}, 'Seus domínios'), h('p', {}, 'Cada domínio ganha os endereços abaixo automaticamente.')), h('button', { class: 'btn sm', onclick: () => { d.list.push(''); drawList(); } }, ic('plus'), 'Adicionar domínio')),

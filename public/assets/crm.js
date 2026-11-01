@@ -90,11 +90,13 @@ async function deleteItem(col, id) {
 /* ======================================================================
    endereços dos subdomínios
    ====================================================================== */
+// Domínio usado nos links (orçamento, editor, site): sempre o domínio principal cadastrado
+// em Configurações → Domínios, mesmo quando o CRM é aberto pelo endereço da Vercel.
 function domainBase() {
-  const list = S.d.settings?.domains?.list || [];
-  const host = location.hostname;
-  const match = list.find((d) => host === d || host.endsWith('.' + d));
-  return match ? (S.d.settings.domains.primary || match) : null;
+  const doms = S.d.settings?.domains || {};
+  const list = (doms.list || []).filter(Boolean);
+  if (!list.length || /^(localhost|127\.0\.0\.1)$|\.localhost$/.test(location.hostname)) return null;
+  return list.includes(doms.primary) ? doms.primary : list[0];
 }
 const quoteUrl = (q) => (domainBase() ? `https://orcamento.${domainBase()}/${q.slug}` : `${location.origin}/o/${q.slug}`);
 const editorUrl = () => (domainBase() ? `https://editar.${domainBase()}/` : `${location.origin}/editar`);

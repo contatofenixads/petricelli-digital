@@ -302,6 +302,11 @@ const TABS = [
   { id: 'backup', label: 'Backup & sessão', icon: 'save', section: 'top', desc: 'Exporte, importe ou restaure a configuração.', fields: [{ type: 'backup' }] },
 ];
 
+/* ---------- endereços (subdomínios) ---------- */
+const SUB_RE = /^(editar|admin|orcamento)\./;
+const siteUrl = () => (SUB_RE.test(location.hostname) ? `${location.protocol}//${location.host.replace(SUB_RE, '')}/` : '/');
+const crmUrl = () => (SUB_RE.test(location.hostname) ? `${location.protocol}//${location.host.replace(SUB_RE, 'admin.')}/` : '/crm');
+
 /* ---------- API ---------- */
 async function api(path, body) {
   return fetch(path, {
@@ -324,7 +329,8 @@ function renderLogin(msg = '') {
   const root = $('#admin');
   root.className = 'login-wrap';
   const err = h('p', { class: 'login-err' }, msg);
-  const input = h('input', { type: 'password', placeholder: 'Senha do painel', autocomplete: 'current-password', required: true });
+  const user = h('input', { type: 'text', placeholder: 'Usuário', autocomplete: 'username', value: 'admin', required: true, id: 'login-user' });
+  const input = h('input', { type: 'password', placeholder: 'Senha', autocomplete: 'current-password', required: true, id: 'login-pass' });
   const submit = h('button', { class: 'abtn primary big', type: 'submit' }, 'Entrar', ic('arrow-right'));
   const form = h('form', {
     class: 'login-card',
@@ -333,9 +339,10 @@ function renderLogin(msg = '') {
       submit.disabled = true;
       err.textContent = '';
       try {
-        const r = await fetch('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: input.value }) });
+        const r = await fetch('/api/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: user.value, password: input.value }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) throw new Error(j.error || 'Não foi possível entrar.');
+        if (!j.user?.perms?.includes('site')) throw new Error('Seu usuário não tem acesso ao editor do site.');
         state.token = j.token;
         store.set('rl_token', j.token);
         await boot();
@@ -346,10 +353,10 @@ function renderLogin(msg = '') {
     },
   },
   h('div', { class: 'login-logo', html: icon('flask') }),
-  h('h1', {}, 'Painel do laboratório'),
+  h('h1', {}, 'Editor do site'),
   h('p', { class: 'login-sub' }, 'Entre para editar cores, textos, imagens e efeitos do site.'),
-  input, submit, err,
-  h('a', { class: 'login-back', href: '/' }, ic('chevron-left'), 'Voltar ao site'));
+  user, input, submit, err,
+  h('a', { class: 'login-back', href: siteUrl() }, ic('chevron-left'), 'Voltar ao site'));
   root.replaceChildren(h('div', { class: 'login-bg' }, h('span'), h('span')), form);
   input.focus();
 }
@@ -664,9 +671,9 @@ function renderApp() {
   const datalist = h('datalist', { id: 'link-suggestions' }, ['whatsapp', ...Object.values(SECTION_IDS).map((s) => '#' + s)].map((v) => h('option', { value: v })));
   root.replaceChildren(
     h('aside', { class: 'side' },
-      h('a', { class: 'brand', href: '/', target: '_blank' }, h('span', { class: 'brand-mark', html: icon('flask') }), h('span', {}, h('strong', {}, 'Petricelli Digital'), h('small', {}, 'Painel administrativo'))),
+      h('a', { class: 'brand', href: siteUrl(), target: '_blank' }, h('span', { class: 'brand-mark', html: icon('flask') }), h('span', {}, h('strong', {}, 'Petricelli Digital'), h('small', {}, 'Painel administrativo'))),
       nav,
-      h('div', { class: 'side-foot' }, h('a', { class: 'abtn ghost small', href: '/', target: '_blank' }, ic('external'), 'Ver site'), h('button', { type: 'button', class: 'abtn ghost small', onclick: logout }, ic('logout'), 'Sair'))),
+      h('div', { class: 'side-foot' }, h('a', { class: 'abtn ghost small', href: siteUrl(), target: '_blank' }, ic('external'), 'Ver site'), h('a', { class: 'abtn ghost small', href: crmUrl() }, ic('layers'), 'CRM'), h('button', { type: 'button', class: 'abtn ghost small', onclick: logout }, ic('logout'), 'Sair'))),
     h('section', { class: 'editor' },
       h('header', { class: 'ed-header' },
         h('button', { type: 'button', class: 'menu-btn', onclick: () => document.body.classList.toggle('nav-open') }, ic('menu')),
@@ -678,7 +685,7 @@ function renderApp() {
           ...[['desktop', 'monitor'], ['tablet', 'tablet'], ['mobile', 'smartphone']].map(([d, i]) => h('button', { type: 'button', class: 'dev', 'data-d': d, title: d, onclick: () => setDevice(d) }, ic(i)))),
         h('span', { class: 'save-state' }),
         h('button', { type: 'button', class: 'abtn primary btn-save', onclick: save }, ic('rocket'), h('span', {}, 'Publicar'))),
-      h('div', { class: 'pv-stage' }, h('div', { class: 'pv-frame' }, h('iframe', { id: 'pv', src: '/?preview=1', title: 'Pré-visualização' })))),
+      h('div', { class: 'pv-stage' }, h('div', { class: 'pv-frame' }, h('iframe', { id: 'pv', src: '/site?preview=1', title: 'Pré-visualização' })))),
     h('button', { type: 'button', class: 'view-toggle', onclick: () => { state.view = state.view === 'edit' ? 'preview' : 'edit'; root.className = 'adm view-' + state.view; } }, ic('eye'), h('span', {}, 'Editar / Ver')),
     datalist);
   setDevice(state.device);

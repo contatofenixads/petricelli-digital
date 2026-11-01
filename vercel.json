@@ -2,8 +2,158 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "public",
   "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.petricellidigital.com.br"
+        }
+      ],
+      "destination": "/crm"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.petricellidigital.com"
+        }
+      ],
+      "destination": "/crm"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin\\..*"
+        }
+      ],
+      "destination": "/crm"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "editar.petricellidigital.com.br"
+        }
+      ],
+      "destination": "/admin"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "editar.petricellidigital.com"
+        }
+      ],
+      "destination": "/admin"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "editar\\..*"
+        }
+      ],
+      "destination": "/admin"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento.petricellidigital.com.br"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento.petricellidigital.com"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento\\..*"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/:slug",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento.petricellidigital.com.br"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/:slug",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento.petricellidigital.com"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/:slug",
+      "has": [
+        {
+          "type": "host",
+          "value": "orcamento\\..*"
+        }
+      ],
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/editar",
+      "destination": "/admin"
+    },
+    {
+      "source": "/o/:slug",
+      "destination": "/orcamento"
+    },
+    {
+      "source": "/",
+      "destination": "/site"
+    }
+  ],
   "headers": [
-    { "source": "/admin", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] },
-    { "source": "/assets/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }] }
+    {
+      "source": "/(admin|crm|orcamento)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
   ]
 }

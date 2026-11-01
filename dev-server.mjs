@@ -1,66 +1,78 @@
-// Servidor local para testar o site e o painel sem a Vercel.
-// Uso: npm run dev   (senha do painel: variável ADMIN_PASSWORD ou "123456789")
+// Servidor local que imita a Vercel: arquivos de /public, funções de /api e os subdomínios do vercel.json.
+// Uso: npm run dev   → http://localhost:3000 (site), /crm (CRM), /editar (editor), /o/<slug> (orçamento)
+// Para testar subdomínios: http://admin.localhost:3000, http://editar.localhost:3000, http://orcamento.localhost:3000/<slug>
+// Senha inicial: usuário "admin", senha 123456789. Os dados ficam na pasta data/.
 import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import crypto from 'node:crypto';
 
+process.env.LOCAL_DATA_DIR ||= path.resolve('data');
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = path.resolve('public');
-const DATA = path.resolve('data/config.json');
-const PASSWORD = process.env.ADMIN_PASSWORD || '123456789';
-const TOKEN = crypto.createHash('sha256').update(`rebecca-lab:${PASSWORD}`).digest('hex');
+const VERCEL = JSON.parse(await fs.readFile('vercel.json', 'utf8'));
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.ico': 'image/x-icon' };
 
-const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)); };
 async function readBody(req) {
   const chunks = [];
   for await (const c of req) chunks.push(c);
-  try { return JSON.parse(Buffer.concat(chunks).toString() || '{}'); } catch { return {}; }
+  const raw = Buffer.concat(chunks).toString();
+  try { return raw ? JSON.parse(raw) : {}; } catch { return {}; }
+}
+
+function hostMatches(value, host) {
+  if (!/[\\*]/.test(value)) return value === host;
+  try { return new RegExp('^' + value + '$').test(host); } catch { return false; }
+}
+function matchSource(source, pathname) {
+  if (source === '/') return pathname === '/';
+  const m = source.match(/^\/(?:([\w-]+)\/)?:(\w+)$/);
+  if (!m) return source === pathname;
+  const parts = pathname.split('/').filter(Boolean);
+  return m[1] ? parts.length === 2 && parts[0] === m[1] : parts.length === 1;
+}
+
+async function fileFor(pathname) {
+  const tries = [pathname, pathname + '.html', path.join(pathname, 'index.html')];
+  for (const t of tries) {
+    const p = path.join(ROOT, path.normalize(t));
+    if (!p.startsWith(ROOT)) return null;
+    const st = await fs.stat(p).catch(() => null);
+    if (st?.isFile()) return p;
+  }
+  return null;
 }
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
-  const authed = req.headers['x-admin-token'] === TOKEN;
+  const host = String(req.headers.host || '').replace(/:\d+$/, '');
 
-  if (url.pathname === '/api/login' && req.method === 'POST') {
-    const b = await readBody(req);
-    if (b.token) return b.token === TOKEN ? json(res, 200, { ok: true }) : json(res, 401, { error: 'Sessão inválida.' });
-    return b.password === PASSWORD ? json(res, 200, { token: TOKEN }) : json(res, 401, { error: 'Senha incorreta.' });
-  }
-  if (url.pathname === '/api/config') {
-    if (req.method === 'GET') {
-      const config = await fs.readFile(DATA, 'utf8').then(JSON.parse).catch(() => null);
-      return json(res, 200, { config, storage: true });
+  // Funções da API
+  const api = url.pathname.match(/^\/api\/([\w-]+)$/);
+  if (api && !api[1].startsWith('_')) {
+    try {
+      const mod = await import(path.resolve('api', api[1] + '.js') + '?v=' + Date.now());
+      req.query = Object.fromEntries(url.searchParams);
+      req.body = req.method === 'POST' ? await readBody(req) : undefined;
+      res.status = (c) => { res.statusCode = c; return res; };
+      res.json = (b) => { if (!res.getHeader('content-type')) res.setHeader('content-type', 'application/json'); res.end(JSON.stringify(b)); };
+      return await mod.default(req, res);
+    } catch (err) {
+      console.error(err);
+      res.statusCode = 500; return res.end(String(err));
     }
-    if (!authed) return json(res, 401, { error: 'Não autorizado.' });
-    const b = await readBody(req);
-    await fs.mkdir(path.dirname(DATA), { recursive: true });
-    await fs.writeFile(DATA, JSON.stringify(b.config, null, 2));
-    return json(res, 200, { ok: true });
-  }
-  if (url.pathname === '/api/upload' && req.method === 'POST') {
-    if (!authed) return json(res, 401, { error: 'Não autorizado.' });
-    const b = await readBody(req);
-    const m = String(b.dataUrl || '').match(/^data:image\/([\w+.-]+);base64,(.+)$/);
-    if (!m) return json(res, 400, { error: 'Formato inválido.' });
-    const ext = m[1] === 'svg+xml' ? 'svg' : m[1] === 'jpeg' ? 'jpg' : m[1];
-    const file = `${Date.now()}-${crypto.randomBytes(3).toString('hex')}.${ext}`;
-    await fs.mkdir(path.join(ROOT, 'uploads'), { recursive: true });
-    await fs.writeFile(path.join(ROOT, 'uploads', file), Buffer.from(m[2], 'base64'));
-    return json(res, 200, { url: `/uploads/${file}` });
   }
 
-  let p = decodeURIComponent(url.pathname);
-  if (p === '/') p = '/index.html';
-  if (p === '/admin') p = '/admin.html';
-  const file = path.join(ROOT, p);
-  if (!file.startsWith(ROOT)) { res.writeHead(403); return res.end(); }
-  try {
-    const data = await fs.readFile(file);
-    res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream' });
-    res.end(data);
-  } catch {
-    res.writeHead(404); res.end('Não encontrado');
+  // Arquivos (têm prioridade, como na Vercel) e depois os rewrites
+  let file = url.pathname === '/' ? null : await fileFor(url.pathname);
+  if (!file) {
+    for (const r of VERCEL.rewrites || []) {
+      if (!matchSource(r.source, url.pathname)) continue;
+      if (r.has && !r.has.every((h) => h.type === 'host' && hostMatches(h.value, host))) continue;
+      file = await fileFor(r.destination);
+      break;
+    }
   }
-}).listen(PORT, () => console.log(`Petricelli Digital rodando em http://localhost:${PORT}  (painel: /admin)`));
+  if (!file) { res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('Página não encontrada'); }
+  res.writeHead(200, { 'content-type': TYPES[path.extname(file)] || 'application/octet-stream', 'cache-control': 'no-store' });
+  res.end(await fs.readFile(file));
+}).listen(PORT, () => console.log(`Petricelli Digital rodando em http://localhost:${PORT}  (CRM: /crm · editor: /editar · senha inicial: admin / 123456789)`));

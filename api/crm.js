@@ -1,6 +1,6 @@
 // API do CRM: clientes, orçamentos, catálogo, financeiro, contas, configurações, usuários e domínios.
 import {
-  ROLES, USERS_PATH, getSession, hasStorage, hashPassword, loadUsers, publicUser,
+  ROLES, USERS_PATH, getSession, normUser, hasStorage, hashPassword, loadUsers, publicUser,
   readJSON, requirePerm, send, slugify, uid, writeJSON,
 } from './_lib.js';
 
@@ -206,11 +206,10 @@ async function usersAction(action, body, me, res) {
   let users = await loadUsers();
   if (action === 'save') {
     const it = body.item || {};
-    const username = slugify(it.username).replace(/-/g, '.');
+    const username = normUser(it.username);
     if (!username) throw new Error('Informe o usuário de acesso.');
     if (!ROLES[it.role]) throw new Error('Escolha um perfil de acesso.');
     if (users.some((u) => u.username === username && u.id !== it.id)) throw new Error('Este usuário já existe.');
-    if (me.id === 'master' && !users.length && it.role !== 'admin') throw new Error('Antes de cadastrar a equipe, crie sua própria senha em Configurações → Segurança. Isso transforma o acesso "admin" em um usuário administrador.');
     const idx = it.id ? users.findIndex((u) => u.id === it.id) : -1;
     if (idx < 0 && String(it.password || '').length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
     if (it.password && String(it.password).length < 6) throw new Error('A senha precisa ter pelo menos 6 caracteres.');
@@ -218,14 +217,14 @@ async function usersAction(action, body, me, res) {
     const next = { ...base, username, name: String(it.name || username).slice(0, 80), role: it.role, active: it.active !== false };
     if (it.password) Object.assign(next, hashPassword(it.password));
     if (idx >= 0) users[idx] = next; else users.push(next);
-    if (!users.some((u) => u.role === 'admin' && u.active !== false)) throw new Error('Mantenha pelo menos um administrador ativo.');
+    if (users.some((u) => u.username === 'admin') && !users.some((u) => u.role === 'admin' && u.active !== false)) throw new Error('Mantenha pelo menos um administrador ativo.');
     await writeJSON(USERS_PATH, users);
     return send(res, 200, { users: users.map(publicUser) });
   }
   if (action === 'delete') {
     if (body.id === me.id) throw new Error('Você não pode excluir o próprio usuário.');
     users = users.filter((u) => u.id !== body.id);
-    if (!users.some((u) => u.role === 'admin' && u.active !== false)) throw new Error('Mantenha pelo menos um administrador ativo.');
+    if (users.some((u) => u.username === 'admin') && !users.some((u) => u.role === 'admin' && u.active !== false)) throw new Error('Mantenha pelo menos um administrador ativo.');
     await writeJSON(USERS_PATH, users);
     return send(res, 200, { users: users.map(publicUser) });
   }

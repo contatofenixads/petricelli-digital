@@ -126,17 +126,21 @@ const MASTER = { id: 'master', username: 'admin', name: 'Administrador', role: '
 export const loadUsers = () => readJSON(USERS_PATH, []);
 export const publicUser = (u) => ({ id: u.id, username: u.username, name: u.name, role: u.role, active: u.active !== false, perms: ROLES[u.role]?.perms || [] });
 
-// Login: usuários cadastrados; enquanto não houver nenhum, vale o usuário "admin" com a senha mestra.
-// A variável ADMIN_PASSWORD (se existir) sempre funciona como acesso de recuperação do "admin".
+// Mesmo formato usado ao cadastrar o usuário ("Sabrina Petricelli" → "sabrina.petricelli").
+export const normUser = (s) => slugify(s).replace(/-/g, '.');
+
+// Login: usuários cadastrados (pelo usuário ou pelo nome). A senha inicial do "admin" vale
+// enquanto não existir um usuário cadastrado com o nome de acesso "admin" (criado ao trocar a
+// senha em Configurações → Segurança). ADMIN_PASSWORD na Vercel sempre funciona como recuperação.
 export async function authenticate(username, password) {
-  const uname = String(username || 'admin').trim().toLowerCase();
-  const users = await loadUsers().catch(() => []);
-  const u = users.find((x) => x.username === uname);
-  if (u) return u.active !== false && verifyPassword(password, u) ? u : null;
-  const isMaster = uname === 'admin' && safeEqual(tokenFor(password ?? ''), masterToken());
-  if (!isMaster) return null;
-  if (users.length === 0 || process.env.ADMIN_PASSWORD) return MASTER;
-  return null;
+  const uname = normUser(username || 'admin') || 'admin';
+  const users = (await loadUsers().catch(() => [])).filter((x) => x.active !== false);
+  const candidates = users.filter((x) => x.username === uname || normUser(x.name) === uname);
+  const u = candidates.find((x) => verifyPassword(password, x));
+  if (u) return u;
+  if (uname !== 'admin' || !safeEqual(tokenFor(password ?? ''), masterToken())) return null;
+  const adminRegistered = users.some((x) => x.username === 'admin');
+  return !adminRegistered || process.env.ADMIN_PASSWORD ? MASTER : null;
 }
 
 /* ---------- sessões assinadas ---------- */
@@ -170,8 +174,8 @@ export async function getSession(req) {
   let data;
   try { data = JSON.parse(Buffer.from(payload, 'base64url').toString()); } catch { return null; }
   if (!data.exp || data.exp < Date.now()) return null;
-  if (data.id === 'master') return publicUser(MASTER);
   const users = await loadUsers().catch(() => []);
+  if (data.id === 'master') return !users.some((x) => x.username === 'admin') || process.env.ADMIN_PASSWORD ? publicUser(MASTER) : null;
   const u = users.find((x) => x.id === data.id);
   return u && u.active !== false ? publicUser(u) : null;
 }

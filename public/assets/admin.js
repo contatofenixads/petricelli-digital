@@ -188,16 +188,20 @@ const TABS = [
       S('logos.direction', 'Direção', [['left', 'Da direita para a esquerda'], ['right', 'Da esquerda para a direita']]),
       TG('logos.pauseOnHover', 'Pausar quando o mouse passar por cima'),
       HD('Tamanho e aparência'),
-      R('logos.size', 'Altura dos logos', 20, 120, 2, ' px', { show: (c) => c.logos.mode === 'logos' }),
-      R('logos.gap', 'Espaço entre os logos', 16, 160, 4, ' px', { show: (c) => c.logos.mode === 'logos' }),
+      R('logos.size', 'Tamanho dos logos', 24, 240, 2, ' px', { def: 72, show: (c) => c.logos.mode === 'logos', hint: 'Altura de cada logo. Imagens de qualquer tamanho (ex.: 1080 × 1080) são redimensionadas automaticamente.' }),
+      S('logos.shape', 'Formato da área do logo', [['auto', 'Proporção original da imagem'], ['square', 'Quadrado (ideal para logos 1080 × 1080)'], ['wide', 'Retângulo (largura 2× a altura)']], { show: (c) => c.logos.mode === 'logos' }),
+      R('logos.radius', 'Cantos arredondados', 0, 50, 1, '%', { def: 0, show: (c) => c.logos.mode === 'logos', hint: '50% no formato quadrado deixa o logo redondo.' }),
+      R('logos.gap', 'Espaço entre os logos', 16, 200, 4, ' px', { def: 56, show: (c) => c.logos.mode === 'logos' }),
       TG('logos.grayscale', 'Logos em tons de cinza (colorem ao passar o mouse)'),
       TG('logos.framed', 'Colocar cada logo dentro de um cartão', { show: (c) => c.logos.mode === 'logos' }),
+      { type: 'custom', show: (c) => c.logos.mode === 'logos', render: () => logosLivePreview() },
       LIST('logos.items', 'Logos', [
         T('name', 'Nome da marca'),
         IMG('image', 'Imagem do logo'),
+        R('zoom', 'Zoom deste logo', 50, 300, 5, '%', { def: 100, show: (c) => c.logos.mode === 'logos', hint: 'Aumente para cortar a borda vazia de logos quadrados e deixá-los do tamanho dos outros.' }),
         { ...ICN('icon'), show: (c) => c.logos.mode !== 'logos' },
         L('link', 'Link ao clicar (opcional)', { hint: 'Site ou Instagram da marca. Deixe vazio para não ter link.' }),
-      ], { name: 'Nova marca', icon: 'star', image: '', link: '' }, 'name'),
+      ], { name: 'Nova marca', icon: 'star', image: '', link: '', zoom: 100 }, 'name'),
     ],
   },
   {
@@ -399,6 +403,35 @@ function update(path, value, rerender = false) {
   refreshDirty();
   pushPreview();
   if (rerender) renderEditor();
+  else document.querySelectorAll('[data-live]').forEach((el) => el.refresh?.());
+}
+
+/* ---------- prévia dos logos em tamanho real (dentro do painel) ---------- */
+function logosLivePreview() {
+  const box = h('div', { class: 'logo-live', 'data-live': 'logos' });
+  box.refresh = () => {
+    const l = state.cfg.logos || {};
+    const t = state.cfg.theme || {};
+    const sz = Number(l.size) || 72;
+    const r = Math.round((sz * Math.min(50, Math.max(0, Number(l.radius) || 0))) / 100);
+    const boxW = l.shape === 'square' ? sz : l.shape === 'wide' ? sz * 2 : null;
+    const row = h('div', { class: 'logo-live-row', style: `gap:${Number(l.gap) || 56}px;background:${t.bg || '#0B0912'};color:${t.text || '#fff'}` });
+    (l.items || []).forEach((x) => {
+      const z = Math.min(4, Math.max(0.2, (Number(x.zoom) || 100) / 100));
+      const cell = h('div', { class: 'logo-live-cell' + (l.framed ? ' framed' : '') + (l.grayscale ? ' gray' : ''), style: `height:${sz}px` });
+      if (x.image) {
+        const frame = h('span', { style: `display:block;height:100%;overflow:hidden;border-radius:${r}px;${boxW ? `width:${boxW}px` : ''}` },
+          h('img', { src: x.image, alt: x.name || '', style: `display:block;height:100%;${boxW ? 'width:100%' : `width:auto;max-width:${sz * 3.5}px`};object-fit:contain;transform:scale(${z})` }));
+        cell.append(frame);
+      } else {
+        cell.append(h('span', { style: `font-weight:700;white-space:nowrap;font-size:${Math.round(sz * 0.42 * z)}px` }, x.name || ''));
+      }
+      row.append(cell);
+    });
+    box.replaceChildren(h('div', { class: 'logo-live-head' }, h('span', {}, 'Prévia em tamanho real'), h('small', {}, `${sz}px de altura`)), h('div', { class: 'logo-live-scroll' }, row));
+  };
+  box.refresh();
+  return box;
 }
 
 function field(f, control, hint) {
@@ -413,6 +446,7 @@ function renderField(f, prefix = '', scope = state.cfg) {
   switch (f.type) {
     case 'heading': return h('h4', { class: 'f-head' }, f.label);
     case 'info': return h('p', { class: 'f-info' }, f.text);
+    case 'custom': return f.render(p, scope);
     case 'text':
     case 'link':
       return field(f, h('input', { type: 'text', value: val ?? '', list: f.type === 'link' ? 'link-suggestions' : null, oninput: (e) => update(p, e.target.value) }), f.type === 'link' ? (f.hint || LINK_HINT) : f.hint);
@@ -421,8 +455,9 @@ function renderField(f, prefix = '', scope = state.cfg) {
     case 'textarea':
       return field(f, h('textarea', { rows: f.rows || 3, oninput: (e) => update(p, e.target.value) }, val ?? ''), f.hint);
     case 'range': {
-      const out = h('output', {}, `${val}${f.unit}`);
-      const inp = h('input', { type: 'range', min: f.min, max: f.max, step: f.step, value: val, oninput: (e) => { out.textContent = e.target.value + f.unit; update(p, Number(e.target.value)); } });
+      const v = val ?? f.def ?? f.min;
+      const out = h('output', {}, `${v}${f.unit}`);
+      const inp = h('input', { type: 'range', min: f.min, max: f.max, step: f.step, value: v, oninput: (e) => { out.textContent = e.target.value + f.unit; update(p, Number(e.target.value)); } });
       return field(f, h('div', { class: 'range' }, inp, out), f.hint);
     }
     case 'color': {

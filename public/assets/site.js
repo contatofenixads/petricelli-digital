@@ -230,16 +230,18 @@ function renderLogos() {
   const logos = l.mode === 'logos';
   const item = (x) => {
     const inner = logos
-      ? (x.image ? `<img src="${esc(x.image)}" alt="${esc(x.name || 'Logo')}" loading="eager" decoding="async" draggable="false">` : `<span class="wordmark">${esc(x.name)}</span>`)
+      ? (x.image ? `<span class="logo-box"><img src="${esc(x.image)}" alt="${esc(x.name || 'Logo')}" decoding="async" draggable="false"></span>` : `<span class="wordmark">${esc(x.name)}</span>`)
       : (x.image ? `<img src="${esc(x.image)}" alt="${esc(x.name)}" draggable="false">` : `${x.icon ? icon(x.icon) : ''}<span>${esc(x.name)}</span>`);
     const cls = logos ? 'brand-logo' : 'logo-item';
+    const z = logos ? ` style="--z:${Math.min(4, Math.max(0.2, (Number(x.zoom) || 100) / 100))}"` : '';
     return x.link
-      ? `<a class="${cls}" href="${esc(href(x.link))}"${ext(href(x.link))} title="${esc(x.name || '')}">${inner}</a>`
-      : `<div class="${cls}"${x.name ? ` title="${esc(x.name)}"` : ''}>${inner}</div>`;
+      ? `<a class="${cls}"${z} href="${esc(href(x.link))}"${ext(href(x.link))} title="${esc(x.name || '')}">${inner}</a>`
+      : `<div class="${cls}"${z}${x.name ? ` title="${esc(x.name)}"` : ''}>${inner}</div>`;
   };
   const set = items.map(item).join('');
-  const classes = ['marquee', logos ? 'is-logos' : 'is-icons', l.grayscale ? 'gray' : '', l.framed && logos ? 'framed' : '', l.pauseOnHover !== false ? 'pausable' : '', l.direction === 'right' ? 'to-right' : ''].filter(Boolean).join(' ');
-  const vars = `--logo-h:${Number(l.size) || 44}px;--gap:${Number(l.gap) || 56}px`;
+  const classes = ['marquee', logos ? 'is-logos' : 'is-icons', logos ? `shape-${['square', 'wide'].includes(l.shape) ? l.shape : 'auto'}` : '', l.grayscale ? 'gray' : '', l.framed && logos ? 'framed' : '', l.pauseOnHover !== false ? 'pausable' : '', l.direction === 'right' ? 'to-right' : ''].filter(Boolean).join(' ');
+  const sz = Number(l.size) || 72;
+  const vars = `--logo-h:${sz}px;--gap:${Number(l.gap) || 56}px;--logo-r-px:${Math.round((sz * Math.min(50, Math.max(0, Number(l.radius) || 0))) / 100)}px`;
   return `<section class="logos" id="logos">
     ${l.title ? `<div class="container"><p class="logos-title reveal">${rich(l.title)}</p></div>` : ''}
     <div class="${classes}" style="${vars}" data-velocity="${Number(l.velocity) || 40}">
@@ -250,6 +252,7 @@ function renderLogos() {
 
 // Carrossel infinito: repete o conjunto de logos até cobrir a tela e desloca exatamente
 // a largura de um conjunto, então o laço nunca mostra emendas nem espaços vazios.
+let marqueeTime = 0;
 function initMarquee() {
   document.querySelectorAll('.marquee').forEach((mq) => {
     const track = mq.querySelector('.marquee-track');
@@ -274,6 +277,8 @@ function initMarquee() {
       track.style.setProperty('--shift', `-${w}px`);
       track.style.setProperty('--dur', `${(w / v).toFixed(2)}s`);
       mq.classList.add('ready');
+      const anim = track.getAnimations?.()[0];
+      if (anim && marqueeTime) anim.currentTime = marqueeTime % ((w / v) * 1000);
     };
     layout();
     const ro = new ResizeObserver(layout);
@@ -587,6 +592,7 @@ function initParticles() {
 
 /* ---------- render ---------- */
 function render() {
+  marqueeTime = document.querySelector('.marquee-track')?.getAnimations?.()[0]?.currentTime || 0;
   cleanups.forEach((fn) => fn());
   cleanups = [];
   applyTheme();

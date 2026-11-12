@@ -186,12 +186,14 @@ export const DEFAULT_CONFIG = {
     velocity: 40, // pixels por segundo
     direction: 'left',
     pauseOnHover: true,
-    size: 44, // altura dos logos em px
+    size: 72, // altura dos logos em px (a largura acompanha o formato escolhido)
+    shape: 'auto', // 'auto' = proporção da imagem · 'square' = quadrado · 'wide' = retângulo 2:1
+    radius: 0, // cantos arredondados, em % da altura (50 = círculo no formato quadrado)
     gap: 56, // espaço entre os logos em px
     grayscale: true,
     framed: false,
     items: [
-      { name: 'Meta Ads', icon: 'facebook', image: '', link: '' },
+      { name: 'Meta Ads', icon: 'facebook', image: '', link: '', zoom: 100 },
       { name: 'Google Ads', icon: 'google', image: '' },
       { name: 'TikTok Ads', icon: 'tiktok', image: '' },
       { name: 'Instagram', icon: 'instagram', image: '' },

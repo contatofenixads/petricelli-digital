@@ -181,10 +181,17 @@ export const DEFAULT_CONFIG = {
   logos: {
     enabled: true,
     title: 'Plataformas e ferramentas que fazem parte do laboratório',
-    speed: 38,
+    // 'icons' = ícone + nome em pílulas · 'logos' = imagens de logos (clientes e parceiros)
+    mode: 'icons',
+    velocity: 40, // pixels por segundo
+    direction: 'left',
+    pauseOnHover: true,
+    size: 44, // altura dos logos em px
+    gap: 56, // espaço entre os logos em px
     grayscale: true,
+    framed: false,
     items: [
-      { name: 'Meta Ads', icon: 'facebook', image: '' },
+      { name: 'Meta Ads', icon: 'facebook', image: '', link: '' },
       { name: 'Google Ads', icon: 'google', image: '' },
       { name: 'TikTok Ads', icon: 'tiktok', image: '' },
       { name: 'Instagram', icon: 'instagram', image: '' },

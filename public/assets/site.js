@@ -225,12 +225,63 @@ function renderHero() {
 
 function renderLogos() {
   const l = cfg.logos;
-  const item = (x) => `<div class="logo-item">${x.image ? `<img src="${esc(x.image)}" alt="${esc(x.name)}">` : `${x.icon ? icon(x.icon) : ''}<span>${esc(x.name)}</span>`}</div>`;
-  const list = l.items.map(item).join('');
+  const items = (l.items || []).filter((x) => x && (x.image || x.name || x.icon));
+  if (!items.length) return '';
+  const logos = l.mode === 'logos';
+  const item = (x) => {
+    const inner = logos
+      ? (x.image ? `<img src="${esc(x.image)}" alt="${esc(x.name || 'Logo')}" loading="eager" decoding="async" draggable="false">` : `<span class="wordmark">${esc(x.name)}</span>`)
+      : (x.image ? `<img src="${esc(x.image)}" alt="${esc(x.name)}" draggable="false">` : `${x.icon ? icon(x.icon) : ''}<span>${esc(x.name)}</span>`);
+    const cls = logos ? 'brand-logo' : 'logo-item';
+    return x.link
+      ? `<a class="${cls}" href="${esc(href(x.link))}"${ext(href(x.link))} title="${esc(x.name || '')}">${inner}</a>`
+      : `<div class="${cls}"${x.name ? ` title="${esc(x.name)}"` : ''}>${inner}</div>`;
+  };
+  const set = items.map(item).join('');
+  const classes = ['marquee', logos ? 'is-logos' : 'is-icons', l.grayscale ? 'gray' : '', l.framed && logos ? 'framed' : '', l.pauseOnHover !== false ? 'pausable' : '', l.direction === 'right' ? 'to-right' : ''].filter(Boolean).join(' ');
+  const vars = `--logo-h:${Number(l.size) || 44}px;--gap:${Number(l.gap) || 56}px`;
   return `<section class="logos" id="logos">
     ${l.title ? `<div class="container"><p class="logos-title reveal">${rich(l.title)}</p></div>` : ''}
-    <div class="marquee${l.grayscale ? ' gray' : ''}" style="--speed:${Number(l.speed) || 30}s"><div class="marquee-track">${list}${list}</div></div>
+    <div class="${classes}" style="${vars}" data-velocity="${Number(l.velocity) || 40}">
+      <div class="marquee-track"><div class="marquee-set">${set}</div></div>
+    </div>
   </section>`;
+}
+
+// Carrossel infinito: repete o conjunto de logos até cobrir a tela e desloca exatamente
+// a largura de um conjunto, então o laço nunca mostra emendas nem espaços vazios.
+function initMarquee() {
+  document.querySelectorAll('.marquee').forEach((mq) => {
+    const track = mq.querySelector('.marquee-track');
+    const first = track?.querySelector('.marquee-set');
+    if (!first) return;
+    let last = '';
+    const layout = () => {
+      const w = first.getBoundingClientRect().width;
+      if (!w) return;
+      const need = Math.max(2, Math.ceil(mq.clientWidth / w) + 1);
+      const key = `${w}|${need}`;
+      if (key === last) return;
+      last = key;
+      track.querySelectorAll('.marquee-set + .marquee-set').forEach((n) => n.remove());
+      for (let i = 1; i < need; i++) {
+        const c = first.cloneNode(true);
+        c.setAttribute('aria-hidden', 'true');
+        c.querySelectorAll('a').forEach((a) => a.setAttribute('tabindex', '-1'));
+        track.append(c);
+      }
+      const v = Math.max(5, Number(mq.dataset.velocity) || 40);
+      track.style.setProperty('--shift', `-${w}px`);
+      track.style.setProperty('--dur', `${(w / v).toFixed(2)}s`);
+      mq.classList.add('ready');
+    };
+    layout();
+    const ro = new ResizeObserver(layout);
+    ro.observe(first);
+    ro.observe(mq);
+    first.querySelectorAll('img').forEach((img) => { if (!img.complete) img.addEventListener('load', layout, { once: true }); });
+    cleanups.push(() => ro.disconnect());
+  });
 }
 
 function renderStats() {
@@ -549,7 +600,7 @@ function render() {
     ${renderAnnouncement()}${renderNav()}<main>${sections}</main>${renderFooter()}${renderWhatsapp()}`;
   if (!firstRender) scrollTo(0, scroll);
   firstRender = false;
-  initNav(); initReveal(); initCounters(); initCarousels(); initTilt(); initCursorGlow(); initParticles();
+  initNav(); initReveal(); initCounters(); initCarousels(); initMarquee(); initTilt(); initCursorGlow(); initParticles();
   document.getElementById('loader')?.classList.add('done');
 }
 
